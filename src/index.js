@@ -1,3 +1,5 @@
+import { Router } from "./bot/router.js";
+
 export default {
   async fetch(request, env) {
     if (request.method !== "POST") {
@@ -5,26 +7,36 @@ export default {
     }
 
     const update = await request.json();
+    const router = new Router(env);
+    const payload = await router.handle(update);
 
-    const chatId =
-      update.message?.chat?.id ||
-      update.callback_query?.message?.chat?.id;
-
-    if (!chatId) {
+    if (!payload) {
       return new Response("OK");
     }
 
+    // Always send via Telegram API (stable mode)
     await fetch(
-      `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
+      `https://api.telegram.org/bot${env.BOT_TOKEN}/${payload.method}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: "✅ VERIFIED BASELINE: Bot is alive"
-        })
+        body: JSON.stringify(payload)
       }
     );
+
+    // ACK inline button clicks
+    if (update.callback_query) {
+      await fetch(
+        `https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            callback_query_id: update.callback_query.id
+          })
+        }
+      );
+    }
 
     return new Response("OK");
   }
