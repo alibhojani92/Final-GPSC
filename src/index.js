@@ -14,7 +14,7 @@ export default {
       return new Response("OK");
     }
 
-    // Always send via Telegram API (stable mode)
+    // Send via Telegram API
     await fetch(
       `https://api.telegram.org/bot${env.BOT_TOKEN}/${payload.method}`,
       {
@@ -24,7 +24,7 @@ export default {
       }
     );
 
-    // ACK inline button clicks
+    // ACK callback
     if (update.callback_query) {
       await fetch(
         `https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`,
