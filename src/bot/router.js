@@ -11,6 +11,7 @@ export class Router {
   }
 
   async handle(update) {
+    // /start command
     if (update.message?.text?.startsWith("/start")) {
       return startFlow(update, this.env);
     }
