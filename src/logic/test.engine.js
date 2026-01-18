@@ -7,10 +7,12 @@
  * - Limit based
  */
 
+/* =========================
+   DAILY TEST
+========================= */
 export async function getDailyTestMCQs(env, userId, limit = 20) {
   const db = env.DB;
 
-  // 1️⃣ Get MCQs not attempted in last 30 days
   const { results } = await db.prepare(
     `
     SELECT m.id, m.question, m.option_a, m.option_b, m.option_c, m.option_d, m.correct_option
@@ -26,7 +28,6 @@ export async function getDailyTestMCQs(env, userId, limit = 20) {
     `
   ).bind(userId, limit).all();
 
-  // 2️⃣ If not enough MCQs (fallback – allow older repeats)
   if (results.length < limit) {
     const { results: fallback } = await db.prepare(
       `
@@ -43,9 +44,29 @@ export async function getDailyTestMCQs(env, userId, limit = 20) {
   return results;
 }
 
-/**
- * Save attempt (called after each answer)
- */
+/* =========================
+   PRACTICE TEST (SAFE STUB)
+   👉 build error fix
+========================= */
+export async function getPracticeTestMCQ(env, subject, limit = 20) {
+  const db = env.DB;
+
+  const { results } = await db.prepare(
+    `
+    SELECT id, question, option_a, option_b, option_c, option_d, correct_option
+    FROM mcqs
+    WHERE subject = ?
+    ORDER BY RANDOM()
+    LIMIT ?
+    `
+  ).bind(subject, limit).all();
+
+  return results;
+}
+
+/* =========================
+   ATTEMPT SAVE
+========================= */
 export async function saveAttempt(env, userId, mcqId, selectedOption, isCorrect) {
   const db = env.DB;
 
@@ -62,9 +83,9 @@ export async function saveAttempt(env, userId, mcqId, selectedOption, isCorrect)
   ).run();
 }
 
-/**
- * Calculate score for a test session
- */
+/* =========================
+   SCORE CALCULATION
+========================= */
 export async function calculateScore(env, userId, sinceMinutes = 60) {
   const db = env.DB;
 
@@ -89,4 +110,4 @@ export async function calculateScore(env, userId, sinceMinutes = 60) {
     correct: row.correct || 0,
     wrong: (row.total || 0) - (row.correct || 0)
   };
-    }
+      }
