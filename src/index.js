@@ -14,10 +14,35 @@ export default {
       return new Response("OK");
     }
 
+    // 👉 CALLBACK QUERY → Telegram API call REQUIRED
+    if (update.callback_query) {
+      await fetch(
+        `https://api.telegram.org/bot${env.BOT_TOKEN}/${payload.method}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      // also ACK callback
+      await fetch(
+        `https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            callback_query_id: update.callback_query.id
+          })
+        }
+      );
+
+      return new Response("OK");
+    }
+
+    // 👉 NORMAL MESSAGE (/start) → webhook response OK
     return new Response(JSON.stringify(payload), {
-      headers: {
-        "Content-Type": "application/json"
-      }
+      headers: { "Content-Type": "application/json" }
     });
   }
 };
