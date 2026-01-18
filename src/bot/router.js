@@ -13,7 +13,7 @@ export class Router {
   }
 
   async handle(update) {
-    if (update.message?.text === "/start") {
+    if (update.message?.text?.startsWith("/start")) {
       return startFlow(update, this.env);
     }
 
@@ -31,4 +31,4 @@ export class Router {
 
     return null;
   }
-        }
+}
