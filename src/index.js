@@ -1,12 +1,5 @@
 export default {
   async fetch(request, env) {
-    const url = new URL(request.url);
-
-    // Only accept Telegram webhook on /webhook
-    if (url.pathname !== "/webhook") {
-      return new Response("OK");
-    }
-
     if (request.method !== "POST") {
       return new Response("OK");
     }
@@ -21,7 +14,6 @@ export default {
       return new Response("OK");
     }
 
-    // VERIFIED: send via Telegram API
     await fetch(
       `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
       {
@@ -29,7 +21,7 @@ export default {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           chat_id: chatId,
-          text: "✅ VERIFIED: Bot is working"
+          text: "✅ VERIFIED BASELINE: Bot is alive"
         })
       }
     );
