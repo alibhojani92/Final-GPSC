@@ -1,16 +1,22 @@
-const payload = await router.handle(update);
+import { Router } from "./router.js";
 
-if (!payload) {
+export async function initBot(request, env) {
+  const update = await request.json();
+  const router = new Router(env);
+  const payload = await router.handle(update);
+
+  if (!payload) {
+    return new Response("OK");
+  }
+
   await fetch(
-    `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
+    `https://api.telegram.org/bot${env.BOT_TOKEN}/${payload.method}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: update.message?.chat?.id || update.callback_query?.message?.chat?.id,
-        text: "⚠️ Router received update but no handler matched"
-      })
+      body: JSON.stringify(payload)
     }
   );
+
   return new Response("OK");
 }
