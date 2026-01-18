@@ -1,7 +1,9 @@
 import { mainKeyboard } from "../keyboards/main.keyboard.js";
 
 export async function startFlow(update, env) {
-  const chatId = update.message.chat.id;
+  const chatId =
+    update.message?.chat?.id ||
+    update.callback_query?.message?.chat?.id;
 
   return {
     method: "sendMessage",
